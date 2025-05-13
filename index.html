@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>President of Earth - EcoSimulation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e0f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .stats, .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      margin: 20px 0;
+    }
+    .box {
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      flex: 1;
+      margin: 10px;
+      min-width: 300px;
+    }
+    button {
+      margin: 5px 0;
+      padding: 10px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌍 President of Earth - EcoSimulation</h1>
+
+  <div class="stats">
+    <div class="box">
+      <h3>Economy 💰</h3>
+      <p id="money">Money: $1000</p>
+      <p id="taxIncome">Tax Income: $100</p>
+    </div>
+    <div class="box">
+      <h3>Environment 🌱</h3>
+      <p id="airQuality">Air Quality: 100%</p>
+      <p id="pollutionLevel">Pollution: 0</p>
+      <p id="co2Emitted">CO₂ Emitted: 0 tons</p>
+      <p id="radiation">Radiation Level: 0.0 Sv</p>
+      <p id="landfillArea">Landfill Area: 0 km²</p>
+    </div>
+    <div class="box">
+      <h3>Energy ⚡</h3>
+      <p id="energyDemand">Demand: 100</p>
+      <p id="energySupply">Supply: 100</p>
+    </div>
+    <div class="box">
+      <h3>Population 👥</h3>
+      <p id="population">Population: 10,000,000</p>
+      <p id="deaths">Deaths this turn: 0</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="box">
+      <h3>Energy Policy</h3>
+      <button onclick="build('solar')">Build Solar Plant ($300, -Pollution, +30 Energy)</button>
+      <button onclick="build('coal')">Build Coal Plant ($200, ++Pollution, +50 Energy, +CO₂)</button>
+      <button onclick="build('wind')">Build Wind Turbine ($250, -Pollution, +25 Energy)</button>
+      <button onclick="build('nuclear')">Build Nuclear Plant ($500, +40 Energy, needs waste disposal)</button>
+    </div>
+    <div class="box">
+      <h3>Tax Policy</h3>
+      <button onclick="adjustTax('pollution')">Enforce Pollution Tax ($+50, -5 Pollution)</button>
+      <button onclick="adjustTax('subsidy')">Subsidize Clean Energy (-$100, -10 Pollution)</button>
+    </div>
+    <div class="box">
+      <h3>Nuclear Waste</h3>
+      <button onclick="disposeWaste('ocean')">Dispose in Ocean (Cheap, +0.5 Sv)</button>
+      <button onclick="disposeWaste('underground')">Dispose Underground (Costly, no radiation)</button>
+    </div>
+    <div class="box">
+      <h3>Next Turn</h3>
+      <button onclick="nextTurn()">Advance Turn ▶️</button>
+      <p id="turnStatus"></p>
+    </div>
+  </div>
+
+  <script>
+    let money = 1000;
+    let pollution = 0;
+    let airQuality = 100;
+    let co2 = 0;
+    let radiation = 0;
+    let landfill = 0;
+    let population = 10000000;
+    let deaths = 0;
+    let energyDemand = 100;
+    let energySupply = 100;
+    let taxIncome = 100;
+
+    function updateUI() {
+      document.getElementById('money').innerText = `Money: $${money}`;
+      document.getElementById('airQuality').innerText = `Air Quality: ${Math.max(0, airQuality)}%`;
+      document.getElementById('pollutionLevel').innerText = `Pollution: ${pollution}`;
+      document.getElementById('co2Emitted').innerText = `CO₂ Emitted: ${co2} tons`;
+      document.getElementById('radiation').innerText = `Radiation Level: ${radiation.toFixed(2)} Sv`;
+      document.getElementById('landfillArea').innerText = `Landfill Area: ${landfill.toFixed(1)} km²`;
+      document.getElementById('energyDemand').innerText = `Demand: ${energyDemand}`;
+      document.getElementById('energySupply').innerText = `Supply: ${energySupply}`;
+      document.getElementById('taxIncome').innerText = `Tax Income: $${taxIncome}`;
+      document.getElementById('population').innerText = `Population: ${population.toLocaleString()}`;
+      document.getElementById('deaths').innerText = `Deaths this turn: ${deaths}`;
+    }
+
+    function build(type) {
+      if (type === 'solar' && money >= 300) {
+        money -= 300;
+        energySupply += 30;
+        pollution -= 5;
+      } else if (type === 'coal' && money >= 200) {
+        money -= 200;
+        energySupply += 50;
+        pollution += 15;
+        co2 += 100;
+        landfill += 0.5;
+      } else if (type === 'wind' && money >= 250) {
+        money -= 250;
+        energySupply += 25;
+        pollution -= 3;
+      } else if (type === 'nuclear' && money >= 500) {
+        money -= 500;
+        energySupply += 40;
+        landfill += 0.2;
+      }
+      updateUI();
+    }
+
+    function adjustTax(option) {
+      if (option === 'pollution') {
+        money += 50;
+        pollution = Math.max(0, pollution - 5);
+      } else if (option === 'subsidy' && money >= 100) {
+        money -= 100;
+        pollution = Math.max(0, pollution - 10);
+      }
+      updateUI();
+    }
+
+    function disposeWaste(method) {
+      if (method === 'ocean') {
+        money -= 50;
+        radiation += 0.5;
+      } else if (method === 'underground' && money >= 200) {
+        money -= 200;
+        // safe disposal, no radiation increase
+      }
+      updateUI();
+    }
+
+    function nextTurn() {
+      money += taxIncome;
+      pollution += Math.max(0, energySupply - energyDemand) * 0.5;
+      co2 += Math.floor(pollution / 5);
+      airQuality = Math.max(0, 100 - pollution * 0.5);
+      radiation = Math.min(10, radiation);
+      landfill += 0.1;
+      deaths = Math.floor((100 - airQuality) * 5 + radiation * 1000);
+      population = Math.max(0, population - deaths);
+      energyDemand += Math.floor(Math.random() * 10);
+
+      let status = "";
+      if (airQuality < 50) status += "🚨 Air quality is dangerously low! ";
+      if (energySupply < energyDemand) status += "⚠️ Not enough energy! Blackouts likely. ";
+      if (money < 0) status += "❗ You're in debt! ";
+      if (radiation > 5) status += "☢️ Radiation reaching dangerous levels! ";
+
+      document.getElementById('turnStatus').innerText = status;
+      updateUI();
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
