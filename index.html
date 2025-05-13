@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
+<head>
   <meta charset="UTF-8">
   <title>President of Earth - EcoSimulation</title>
   <style>
@@ -68,9 +68,11 @@
     <div class="box">
       <h3>Energy Policy</h3>
       <button onclick="build('solar')">Build Solar Plant ($300, -Pollution, +30 Energy)</button>
-      <button onclick="build('coal')">Build Coal Plant ($200, ++Pollution, +50 Energy, +CO₂)</button>
+      <button onclick="build('coal')">Build Coal Plant ($200, ++Pollution, +50 Energy, +CO₂/sec)</button>
       <button onclick="build('wind')">Build Wind Turbine ($250, -Pollution, +25 Energy)</button>
       <button onclick="build('nuclear')">Build Nuclear Plant ($500, +40 Energy, needs waste disposal)</button>
+      <button onclick="removePlant('coal')">Destroy Coal Plant (-50 Energy)</button>
+      <button onclick="addCarbonCapture()">Install Carbon Capture ($400, -CO₂/sec)</button>
     </div>
     <div class="box">
       <h3>Tax Policy</h3>
@@ -102,11 +104,14 @@
     let energySupply = 100;
     let taxIncome = 100;
 
+    let coalPlants = 0;
+    let carbonCapture = 0;
+
     function updateUI() {
       document.getElementById('money').innerText = `Money: $${money}`;
       document.getElementById('airQuality').innerText = `Air Quality: ${Math.max(0, airQuality)}%`;
       document.getElementById('pollutionLevel').innerText = `Pollution: ${pollution}`;
-      document.getElementById('co2Emitted').innerText = `CO₂ Emitted: ${co2} tons`;
+      document.getElementById('co2Emitted').innerText = `CO₂ Emitted: ${Math.floor(co2)} tons`;
       document.getElementById('radiation').innerText = `Radiation Level: ${radiation.toFixed(2)} Sv`;
       document.getElementById('landfillArea').innerText = `Landfill Area: ${landfill.toFixed(1)} km²`;
       document.getElementById('energyDemand').innerText = `Demand: ${energyDemand}`;
@@ -125,8 +130,8 @@
         money -= 200;
         energySupply += 50;
         pollution += 15;
-        co2 += 100;
         landfill += 0.5;
+        coalPlants++;
       } else if (type === 'wind' && money >= 250) {
         money -= 250;
         energySupply += 25;
@@ -135,6 +140,22 @@
         money -= 500;
         energySupply += 40;
         landfill += 0.2;
+      }
+      updateUI();
+    }
+
+    function removePlant(type) {
+      if (type === 'coal' && coalPlants > 0) {
+        coalPlants--;
+        energySupply -= 50;
+      }
+      updateUI();
+    }
+
+    function addCarbonCapture() {
+      if (money >= 400) {
+        money -= 400;
+        carbonCapture++;
       }
       updateUI();
     }
@@ -156,17 +177,16 @@
         radiation += 0.5;
       } else if (method === 'underground' && money >= 200) {
         money -= 200;
-        // safe disposal, no radiation increase
       }
       updateUI();
     }
 
     function nextTurn() {
       money += taxIncome;
+      co2 += (coalPlants * 50) - (carbonCapture * 30);
+      if (co2 < 0) co2 = 0;
       pollution += Math.max(0, energySupply - energyDemand) * 0.5;
-      co2 += Math.floor(pollution / 5);
       airQuality = Math.max(0, 100 - pollution * 0.5);
-      radiation = Math.min(10, radiation);
       landfill += 0.1;
       deaths = Math.floor((100 - airQuality) * 5 + radiation * 1000);
       population = Math.max(0, population - deaths);
