@@ -200,7 +200,7 @@
       deaths = Math.floor((100 - airQuality) * 0.05 + radiation * 10);
       population = Math.max(0, population - deaths);
       landfill += coalPlants * 0.0001;
-      money += taxIncome / 100;
+      money += taxIncome / 20;
       updateUI();
     }, 100);
 
