@@ -51,6 +51,7 @@
       <p id="co2Emitted">CO₂ Emitted: 0 tons</p>
       <p id="radiation">Radiation Level: 0.0 Sv</p>
       <p id="landfillArea">Landfill Area: 0 km²</p>
+      <p id="nuclearWaste">Nuclear Waste: 0 units</p>
     </div>
     <div class="box">
       <h3>Energy ⚡</h3>
@@ -75,7 +76,7 @@
       <button onclick="build('solar')">Build Solar Plant ($300, -Pollution, +30 Energy)</button>
       <button onclick="build('coal')">Build Coal Plant ($200, ++Pollution, +50 Energy, +CO₂/sec)</button>
       <button onclick="build('wind')">Build Wind Turbine ($250, -Pollution, +25 Energy)</button>
-      <button onclick="build('nuclear')">Build Nuclear Plant ($500, +40 Energy, needs waste disposal)</button>
+      <button onclick="build('nuclear')">Build Nuclear Plant ($500, +40 Energy, adds nuclear waste)</button>
       <button onclick="removePlant('coal')">Destroy Coal Plant (-50 Energy)</button>
       <button onclick="addCarbonCapture()">Install Carbon Capture ($400, -30 CO₂/sec)</button>
     </div>
@@ -98,6 +99,7 @@
     let co2 = 0;
     let radiation = 0;
     let landfill = 0;
+    let nuclearWaste = 0;
     let population = 10000000;
     let deaths = 0;
     let energyDemand = 100;
@@ -117,6 +119,7 @@
       document.getElementById('co2Emitted').innerText = `CO₂ Emitted: ${Math.floor(co2)} tons`;
       document.getElementById('radiation').innerText = `Radiation Level: ${radiation.toFixed(2)} Sv`;
       document.getElementById('landfillArea').innerText = `Landfill Area: ${landfill.toFixed(1)} km²`;
+      document.getElementById('nuclearWaste').innerText = `Nuclear Waste: ${nuclearWaste}`;
       document.getElementById('energyDemand').innerText = `Demand: ${Math.floor(energyDemand)}`;
       document.getElementById('energySupply').innerText = `Supply: ${energySupply}`;
       document.getElementById('taxIncome').innerText = `Tax Income: $${taxIncome}`;
@@ -148,6 +151,7 @@
       } else if (type === 'nuclear' && money >= 500) {
         money -= 500;
         energySupply += 40;
+        nuclearWaste += 1;
         nuclearPlants++;
       }
       updateUI();
@@ -182,11 +186,14 @@
     }
 
     function disposeWaste(method) {
+      if (nuclearWaste <= 0) return;
       if (method === 'ocean') {
         money -= 50;
         radiation += 0.5;
+        nuclearWaste--;
       } else if (method === 'underground' && money >= 200) {
         money -= 200;
+        nuclearWaste--;
       }
       updateUI();
     }
@@ -199,7 +206,7 @@
       population = Math.max(0, population - deaths);
       landfill += population * 0.000000005;
       energyDemand += 0.05;
-      money += taxIncome / 20;
+      money += taxIncome / 100;
       updateUI();
     }, 100);
 
