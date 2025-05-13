@@ -33,10 +33,29 @@
       padding: 10px;
       width: 100%;
     }
+    #gameOverScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-size: 2em;
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
   <h1>🌍 President of Earth - EcoSimulation</h1>
+
+  <div id="gameOverScreen">
+    <div>💀 GAME OVER 💀<br>Air Quality reached 0%</div>
+  </div>
 
   <div class="stats">
     <div class="box">
@@ -112,6 +131,8 @@
     let nuclearPlants = 0;
     let carbonCapture = 0;
 
+    let gameOver = false;
+
     function updateUI() {
       document.getElementById('money').innerText = `Money: $${Math.floor(money)}`;
       document.getElementById('airQuality').innerText = `Air Quality: ${Math.max(0, airQuality).toFixed(1)}%`;
@@ -119,7 +140,7 @@
       document.getElementById('co2Emitted').innerText = `CO₂ Emitted: ${Math.floor(co2)} tons`;
       document.getElementById('radiation').innerText = `Radiation Level: ${radiation.toFixed(2)} Sv`;
       document.getElementById('landfillArea').innerText = `Landfill Area: ${landfill.toFixed(1)} km²`;
-      document.getElementById('nuclearWaste').innerText = `Nuclear Waste: ${nuclearWaste}`;
+      document.getElementById('nuclearWaste').innerText = `Nuclear Waste: ${Math.floor(nuclearWaste)}`;
       document.getElementById('energyDemand').innerText = `Demand: ${Math.floor(energyDemand)}`;
       document.getElementById('energySupply').innerText = `Supply: ${energySupply}`;
       document.getElementById('taxIncome').innerText = `Tax Income: $${taxIncome}`;
@@ -132,7 +153,13 @@
       document.getElementById('carbonCapture').innerText = `Carbon Capture Units: ${carbonCapture}`;
     }
 
+    function endGame() {
+      gameOver = true;
+      document.getElementById('gameOverScreen').style.display = 'flex';
+    }
+
     function build(type) {
+      if (gameOver) return;
       if (type === 'solar' && money >= 300) {
         money -= 300;
         energySupply += 30;
@@ -151,13 +178,13 @@
       } else if (type === 'nuclear' && money >= 500) {
         money -= 500;
         energySupply += 40;
-        nuclearWaste += 1;
         nuclearPlants++;
       }
       updateUI();
     }
 
     function removePlant(type) {
+      if (gameOver) return;
       if (type === 'coal' && coalPlants > 0) {
         coalPlants--;
         energySupply -= 50;
@@ -167,6 +194,7 @@
     }
 
     function addCarbonCapture() {
+      if (gameOver) return;
       if (money >= 400) {
         money -= 400;
         carbonCapture++;
@@ -175,6 +203,7 @@
     }
 
     function adjustTax(option) {
+      if (gameOver) return;
       if (option === 'pollution') {
         money += 50;
         pollution = Math.max(0, pollution - 5);
@@ -186,7 +215,7 @@
     }
 
     function disposeWaste(method) {
-      if (nuclearWaste <= 0) return;
+      if (gameOver || nuclearWaste <= 0) return;
       if (method === 'ocean') {
         money -= 50;
         radiation += 0.5;
@@ -199,14 +228,17 @@
     }
 
     setInterval(() => {
+      if (gameOver) return;
       co2 += Math.max(0, (coalPlants * 0.05) - (carbonCapture * 0.03));
       pollution += Math.max(0, (energySupply - energyDemand) * 0.001);
       airQuality = Math.max(0, 100 - pollution * 0.5);
+      if (airQuality <= 0) return endGame();
       deaths = Math.floor((100 - airQuality) * 0.05 + radiation * 10);
       population = Math.max(0, population - deaths);
       landfill += population * 0.000000005;
+      nuclearWaste += nuclearPlants * 0.005;
       energyDemand += 0.05;
-      money += taxIncome / 100;
+      money += taxIncome / 20;
       updateUI();
     }, 100);
 
