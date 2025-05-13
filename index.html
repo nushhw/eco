@@ -57,6 +57,9 @@
       <p id="energyDemand">Demand: 100</p>
       <p id="energySupply">Supply: 100</p>
       <p id="coalPlants">Coal Plants: 0</p>
+      <p id="solarPlants">Solar Plants: 0</p>
+      <p id="windTurbines">Wind Turbines: 0</p>
+      <p id="nuclearPlants">Nuclear Plants: 0</p>
       <p id="carbonCapture">Carbon Capture Units: 0</p>
     </div>
     <div class="box">
@@ -102,6 +105,9 @@
     let taxIncome = 100;
 
     let coalPlants = 0;
+    let solarPlants = 0;
+    let windTurbines = 0;
+    let nuclearPlants = 0;
     let carbonCapture = 0;
 
     function updateUI() {
@@ -117,6 +123,9 @@
       document.getElementById('population').innerText = `Population: ${population.toLocaleString()}`;
       document.getElementById('deaths').innerText = `Deaths/sec: ${deaths}`;
       document.getElementById('coalPlants').innerText = `Coal Plants: ${coalPlants}`;
+      document.getElementById('solarPlants').innerText = `Solar Plants: ${solarPlants}`;
+      document.getElementById('windTurbines').innerText = `Wind Turbines: ${windTurbines}`;
+      document.getElementById('nuclearPlants').innerText = `Nuclear Plants: ${nuclearPlants}`;
       document.getElementById('carbonCapture').innerText = `Carbon Capture Units: ${carbonCapture}`;
     }
 
@@ -125,6 +134,7 @@
         money -= 300;
         energySupply += 30;
         pollution -= 5;
+        solarPlants++;
       } else if (type === 'coal' && money >= 200) {
         money -= 200;
         energySupply += 50;
@@ -135,10 +145,12 @@
         money -= 250;
         energySupply += 25;
         pollution -= 3;
+        windTurbines++;
       } else if (type === 'nuclear' && money >= 500) {
         money -= 500;
         energySupply += 40;
         landfill += 0.2;
+        nuclearPlants++;
       }
       updateUI();
     }
@@ -188,7 +200,7 @@
       deaths = Math.floor((100 - airQuality) * 0.05 + radiation * 10);
       population = Math.max(0, population - deaths);
       landfill += coalPlants * 0.0001;
-      money += taxIncome / 10;
+      money += taxIncome / 100;
       updateUI();
     }, 100);
 
