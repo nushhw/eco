@@ -56,11 +56,13 @@
       <h3>Energy ⚡</h3>
       <p id="energyDemand">Demand: 100</p>
       <p id="energySupply">Supply: 100</p>
+      <p id="coalPlants">Coal Plants: 0</p>
+      <p id="carbonCapture">Carbon Capture Units: 0</p>
     </div>
     <div class="box">
       <h3>Population 👥</h3>
       <p id="population">Population: 10,000,000</p>
-      <p id="deaths">Deaths this turn: 0</p>
+      <p id="deaths">Deaths/sec: 0</p>
     </div>
   </div>
 
@@ -72,7 +74,7 @@
       <button onclick="build('wind')">Build Wind Turbine ($250, -Pollution, +25 Energy)</button>
       <button onclick="build('nuclear')">Build Nuclear Plant ($500, +40 Energy, needs waste disposal)</button>
       <button onclick="removePlant('coal')">Destroy Coal Plant (-50 Energy)</button>
-      <button onclick="addCarbonCapture()">Install Carbon Capture ($400, -CO₂/sec)</button>
+      <button onclick="addCarbonCapture()">Install Carbon Capture ($400, -30 CO₂/sec)</button>
     </div>
     <div class="box">
       <h3>Tax Policy</h3>
@@ -83,11 +85,6 @@
       <h3>Nuclear Waste</h3>
       <button onclick="disposeWaste('ocean')">Dispose in Ocean (Cheap, +0.5 Sv)</button>
       <button onclick="disposeWaste('underground')">Dispose Underground (Costly, no radiation)</button>
-    </div>
-    <div class="box">
-      <h3>Next Turn</h3>
-      <button onclick="nextTurn()">Advance Turn ▶️</button>
-      <p id="turnStatus"></p>
     </div>
   </div>
 
@@ -108,17 +105,19 @@
     let carbonCapture = 0;
 
     function updateUI() {
-      document.getElementById('money').innerText = `Money: $${money}`;
-      document.getElementById('airQuality').innerText = `Air Quality: ${Math.max(0, airQuality)}%`;
-      document.getElementById('pollutionLevel').innerText = `Pollution: ${pollution}`;
+      document.getElementById('money').innerText = `Money: $${Math.floor(money)}`;
+      document.getElementById('airQuality').innerText = `Air Quality: ${Math.max(0, airQuality).toFixed(1)}%`;
+      document.getElementById('pollutionLevel').innerText = `Pollution: ${pollution.toFixed(1)}`;
       document.getElementById('co2Emitted').innerText = `CO₂ Emitted: ${Math.floor(co2)} tons`;
       document.getElementById('radiation').innerText = `Radiation Level: ${radiation.toFixed(2)} Sv`;
       document.getElementById('landfillArea').innerText = `Landfill Area: ${landfill.toFixed(1)} km²`;
-      document.getElementById('energyDemand').innerText = `Demand: ${energyDemand}`;
+      document.getElementById('energyDemand').innerText = `Demand: ${Math.floor(energyDemand)}`;
       document.getElementById('energySupply').innerText = `Supply: ${energySupply}`;
       document.getElementById('taxIncome').innerText = `Tax Income: $${taxIncome}`;
       document.getElementById('population').innerText = `Population: ${population.toLocaleString()}`;
-      document.getElementById('deaths').innerText = `Deaths this turn: ${deaths}`;
+      document.getElementById('deaths').innerText = `Deaths/sec: ${deaths}`;
+      document.getElementById('coalPlants').innerText = `Coal Plants: ${coalPlants}`;
+      document.getElementById('carbonCapture').innerText = `Carbon Capture Units: ${carbonCapture}`;
     }
 
     function build(type) {
@@ -148,6 +147,7 @@
       if (type === 'coal' && coalPlants > 0) {
         coalPlants--;
         energySupply -= 50;
+        pollution -= 10;
       }
       updateUI();
     }
@@ -181,26 +181,16 @@
       updateUI();
     }
 
-    function nextTurn() {
-      money += taxIncome;
-      co2 += (coalPlants * 50) - (carbonCapture * 30);
-      if (co2 < 0) co2 = 0;
-      pollution += Math.max(0, energySupply - energyDemand) * 0.5;
+    setInterval(() => {
+      co2 += Math.max(0, (coalPlants * 0.05) - (carbonCapture * 0.03));
+      pollution += Math.max(0, (energySupply - energyDemand) * 0.001);
       airQuality = Math.max(0, 100 - pollution * 0.5);
-      landfill += 0.1;
-      deaths = Math.floor((100 - airQuality) * 5 + radiation * 1000);
+      deaths = Math.floor((100 - airQuality) * 0.05 + radiation * 10);
       population = Math.max(0, population - deaths);
-      energyDemand += Math.floor(Math.random() * 10);
-
-      let status = "";
-      if (airQuality < 50) status += "🚨 Air quality is dangerously low! ";
-      if (energySupply < energyDemand) status += "⚠️ Not enough energy! Blackouts likely. ";
-      if (money < 0) status += "❗ You're in debt! ";
-      if (radiation > 5) status += "☢️ Radiation reaching dangerous levels! ";
-
-      document.getElementById('turnStatus').innerText = status;
+      landfill += coalPlants * 0.0001;
+      money += taxIncome / 10;
       updateUI();
-    }
+    }, 100);
 
     updateUI();
   </script>
