@@ -54,7 +54,7 @@
     </div>
     <div class="box">
       <h3>Energy ⚡</h3>
-      <p id="energyDemand">Demand: 0</p>
+      <p id="energyDemand">Demand: 100</p>
       <p id="energySupply">Supply: 0</p>
       <p id="coalPlants">Coal Plants: 0</p>
       <p id="solarPlants">Solar Plants: 0</p>
@@ -100,7 +100,7 @@
     let landfill = 0;
     let population = 10000000;
     let deaths = 0;
-    let energyDemand = 0;
+    let energyDemand = 100;
     let energySupply = 0;
     let taxIncome = 100;
 
@@ -134,24 +134,20 @@
         money -= 300;
         energySupply += 30;
         pollution -= 5;
-        landfill += 0.1;
         solarPlants++;
       } else if (type === 'coal' && money >= 200) {
         money -= 200;
         energySupply += 50;
         pollution += 15;
-        landfill += 0.5;
         coalPlants++;
       } else if (type === 'wind' && money >= 250) {
         money -= 250;
         energySupply += 25;
         pollution -= 3;
-        landfill += 0.1;
         windTurbines++;
       } else if (type === 'nuclear' && money >= 500) {
         money -= 500;
         energySupply += 40;
-        landfill += 0.3;
         nuclearPlants++;
       }
       updateUI();
@@ -201,7 +197,8 @@
       airQuality = Math.max(0, 100 - pollution * 0.5);
       deaths = Math.floor((100 - airQuality) * 0.05 + radiation * 10);
       population = Math.max(0, population - deaths);
-      landfill += coalPlants * 0.0001 + solarPlants * 0.00005 + windTurbines * 0.00005 + nuclearPlants * 0.0002;
+      landfill += population * 0.000000005;
+      energyDemand += 0.05;
       money += taxIncome / 20;
       updateUI();
     }, 100);
